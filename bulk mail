@@ -1,0 +1,69 @@
+Function strLegalFileName(strFileNameIn As String) As String
+Dim i As Integer
+Const strIllegals = "///?*<>"":"
+strLegalFileName = strFileNameIn
+For i = 1 To Len(strIllegals)
+strLegalFileName Replace(strLegalFileName, Mid$(strIllegals, i, 1), "_")
+Next i
+End Function
+
+Sub sendEmails()
+Dim objOutlook As Object
+Set objOutlook = CreateObject("outlook.Application")
+Dim objEmail As Object
+Set objEmail = objOutlook.CreateItem(olMailItem)
+Dim link As String
+Dim attach As String
+Dim strfile As String
+
+'can contol from which row the ail should generate
+intRow = 2
+
+strID = ThisWorkbook.Sheets("data").Range("A" & intRow).Text
+
+While (strPolNo <> "")
+
+Set objEmail = objOutlook.CreateItem(olMailItem)
+'Give the mail data in the below mentioned cells
+strMailSubject = ThisWorkbook.Sheets("message").Range("A2").Text
+strMailBodyl = ThisWorkbook.Sheets("message").Range("B2").Text
+strMailBody2 = ThisWorkbook.Sheets("message").Range("B3").Text
+strMailBody3 = ThisWorkbook.Sheets("message").Range("C2").Text
+strMailBody4 = ThisWorkbook.Sheets("message").Range("C3").Text
+
+strFolder = "path where to save"
+
+'reading data from the sheet 
+strID = ThisWorkbook.Sheets("data").Range("A" & intRow).Text
+strName = ThisWorkbook.Sheets("data").Range("B" & intRow).Text
+strEmail = ThisWorkbook.Sheets("data").Range("C" & intRow).Text
+strfile = ThisWorkbook.Sheets("data").Range("D" & intRow).Text
+strCC1 = ThisWorkbook.Sheets("data").Range("E" & intRow).Text
+strMailBody3 = Replace(strMailBody3, "<Date>", strDate)
+strMailBody4 = Replace(strMailBody4, "<Name>", strName)
+attach = strLegalFileName(strfile)
+
+mailName = strLegalFileName(strName & ".msg")
+If strEmail <> "" And strEmail <> "#N/A" And strEmail <> "(blank)" Then
+
+With objEmail
+.To = CStr(strEmail)
+.CCCStr = (strCCI)
+.SentOnBehalfOfName = "abc@mail.com"
+.Subject = strMailSubject
+.HTMLBody = "<BR><BR>" & strMailBodyl & "<BR><BR>" & strMailBody2 & "<BR><BR>" & strMailBody3 & "<BR><BR>" & strMailBody4 & "<BR><BR>"
+.Attachments.Add strFolder & "\" & attach & ".PDF"
+.SaveAs strFolder & "\" & mailName
+.Send
+
+End With
+End If
+
+intRow = intRow + 1
+strID = ThisWorkbook.Sheets("data").Range("A" & intRow).Text
+
+Wend
+
+MsgBox "Done"
+
+End Sub
